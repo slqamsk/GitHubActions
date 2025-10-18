@@ -5,6 +5,11 @@ build/
 !**/src/test/**/build/
 .kotlin
 
+
+### Allure ###
+allure-results/
+allure-report/
+
 ### IntelliJ IDEA ###
 .idea/
 .idea/modules.xml
