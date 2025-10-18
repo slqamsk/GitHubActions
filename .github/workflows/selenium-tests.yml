@@ -72,7 +72,7 @@ jobs:
       # Шаг 6: Установка Allure
       - name: Install Allure
         run: |
-          wget https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.tgz
+          wget -q https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.tgz
           tar -zxvf allure-2.29.0.tgz -C /opt/
           ln -s /opt/allure-2.29.0/bin/allure /usr/local/bin/allure
           allure --version
@@ -81,20 +81,41 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # Шаг 8: Запуск тестов
+      # Шаг 8: Отладочная информация
+      - name: Debug file structure
+        run: |
+          echo "=== File structure ==="
+          find . -name "*.java" -o -name "*.gradle" -o -name "gradlew" | head -20
+          echo "=== Build files ==="
+          ls -la build/ 2>/dev/null || echo "No build directory yet"
+
+      # Шаг 9: Запуск тестов
       - name: Run tests
         run: |
-          ./gradlew clean test --info
+          ./gradlew clean test --info --stacktrace
         env:
           selenide.browser: chrome
           selenide.headless: true
 
-      # Шаг 9: Генерация Allure отчета
+      # Шаг 10: Проверяем что создалось
+      - name: Check build results
+        run: |
+          echo "=== After tests ==="
+          find build/ -type f -name "*.xml" -o -name "*.json" 2>/dev/null | head -20 || echo "No test results found"
+          ls -la build/ 2>/dev/null || echo "No build directory"
+
+      # Шаг 11: Генерация Allure отчета (если есть результаты)
       - name: Generate Allure Report
         run: |
-          allure generate build/allure-results -o build/reports/allure-report -c
+          if [ -d "build/allure-results" ]; then
+            echo "Generating Allure report..."
+            allure generate build/allure-results -o build/reports/allure-report -c
+            echo "Allure report generated"
+          else
+            echo "No allure-results directory found"
+          fi
 
-      # Шаг 10: Загрузка артефактов
+      # Шаг 12: Загрузка артефактов (только если они есть)
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
