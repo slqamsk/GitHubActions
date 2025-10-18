@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Шаг 2: Установка системных зависимостей (исправленная)
+      # Шаг 2: Установка системных зависимостей
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -37,7 +37,7 @@ jobs:
             libxrandr2 \
             xvfb
 
-      # Шаг 3: Установка Google Chrome
+      # Шаг 3: Установка Google Chrome (стабильная версия)
       - name: Install Google Chrome
         run: |
           wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
@@ -46,14 +46,12 @@ jobs:
           sudo apt-get install -y google-chrome-stable
           echo "✅ Chrome version: $(google-chrome --version)"
 
-      # Шаг 4: Установка ChromeDriver
+      # Шаг 4: Установка ChromeDriver (исправленная версия)
       - name: Install ChromeDriver
         run: |
-          CHROME_VERSION=$(google-chrome --version | awk '{print $3}' | cut -d'.' -f1)
-          echo "Chrome major version: $CHROME_VERSION"
-          
-          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_VERSION")
-          echo "ChromeDriver version: $CHROMEDRIVER_VERSION"
+          # Скачиваем последнюю стабильную версию ChromeDriver
+          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE")
+          echo "Latest ChromeDriver version: $CHROMEDRIVER_VERSION"
           
           wget -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
           sudo unzip /tmp/chromedriver.zip -d /usr/local/bin/
