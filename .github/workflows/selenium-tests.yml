@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main ]
 
+# Разрешаем запись в репозиторий для GitHub Pages
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
 jobs:
   test:
     name: Run Selenium Tests
@@ -15,6 +21,8 @@ jobs:
       # Шаг 1: Получение кода
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       # Шаг 2: Установка системных зависимостей
       - name: Install system dependencies
@@ -90,24 +98,17 @@ jobs:
           ## Как посмотреть отчет:
           
           ### Вариант 1: Онлайн (GitHub Pages)
-          Отчет автоматически публикуется на GitHub Pages:
-          https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+          Отчет автоматически публикуется на GitHub Pages.
           
           ### Вариант 2: Скачать и открыть локально
-          1. Скачайте артефакт `allure-report` из GitHub Actions
+          1. Скачайте артефакт `allure-report-download` из GitHub Actions
           2. Распакуйте архив
           3. Откройте файл `index.html` в браузере
-          
-          ### Вариант 3: Через Allure CLI
-          \`\`\`bash
-          allure serve allure-results
-          \`\`\`
           
           ## Информация о запуске:
           - **Ревизия:** ${{ github.sha }}
           - **Ветка:** ${{ github.ref_name }}
           - **Запуск:** #${{ github.run_number }}
-          - **Дата:** $(date)
           EOF
 
       # Шаг 10: Загрузка артефактов для скачивания
@@ -130,15 +131,22 @@ jobs:
           retention-days: 30
 
       # Шаг 11: Деплой отчета на GitHub Pages
-      - name: Deploy Allure Report to GitHub Pages
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
         if: success()
-        uses: peaceiris/actions-gh-pages@v3
+
+      - name: Upload to Pages
+        uses: actions/upload-pages-artifact@v3
+        if: success()
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/reports/allure-report
-          publish_branch: gh-pages
-          force_orphan: true
-          keep_files: false
+          path: ./build/reports/allure-report
+
+      - name: Deploy to GitHub Pages
+        if: success()
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   # Отдельный job для уведомления о доступности отчета
   notify:
@@ -153,8 +161,8 @@ jobs:
         run: |
           echo "🎉 Тесты прошли успешно!"
           echo "📊 Allure Report доступен:"
-          echo "   🔗 Онлайн: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
           echo "   💾 Скачать: В разделе Artifacts как 'allure-report-download'"
+          echo "   🌐 Онлайн: После настройки GitHub Pages"
 
       - name: Report Failure
         if: needs.test.result == 'failure'
