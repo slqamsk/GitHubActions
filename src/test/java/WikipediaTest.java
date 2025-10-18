@@ -3,6 +3,7 @@ import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.*;
@@ -33,6 +34,17 @@ public class WikipediaTest {
         // Дополнительные настройки для стабильности в CI
         Configuration.browserCapabilities.setCapability("acceptInsecureCerts", true);
         Configuration.pageLoadStrategy = "eager";
+
+        // Уникальный user data directory для избежания конфликтов
+        if (isCi) {
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments(
+                    "--user-data-dir=/tmp/chrome-user-data-" + System.currentTimeMillis(),
+                    "--no-sandbox",
+                    "--disable-dev-shm-usage"
+            );
+            Configuration.browserCapabilities.setCapability(ChromeOptions.CAPABILITY, options);
+        }
     }
 
     @Test

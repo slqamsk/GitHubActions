@@ -70,9 +70,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # Шаг 8: Запуск тестов
-      - name: Run tests
+      # Шаг 8: Запуск тестов с Xvfb для headless режима
+      - name: Run tests with Xvfb
         run: |
+          export DISPLAY=:99
+          Xvfb :99 -screen 0 1920x1080x24 &
           ./gradlew clean test --info --stacktrace
         env:
           selenide.browser: chrome
