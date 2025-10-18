@@ -3,7 +3,6 @@ import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.selenide.AllureSelenide;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import io.qameta.allure.*;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.*;
@@ -13,21 +12,25 @@ public class WikipediaTest {
 
     @BeforeAll
     static void beforeAll() {
-        // Настройки Selenide
+        // Allure listener
+        SelenideLogger.addListener("allure", new AllureSelenide());
+
+        // Настройки для CI
         Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080";
         Configuration.timeout = 10000;
-
-        // Для CI - будет переопределено через системные свойства
-        Configuration.headless = Boolean.parseBoolean(System.getProperty("selenide.headless", "false"));
         Configuration.remote = System.getProperty("selenide.remote");
 
-        // Allure listener
-        SelenideLogger.addListener("allure", new AllureSelenide());
+        // Для CI устанавливаем headless режим
+        boolean isCi = System.getProperty("selenide.headless", "false").equals("true");
+        Configuration.headless = isCi;
+
+        // Дополнительные настройки для стабильности в CI
+        Configuration.browserCapabilities.setCapability("acceptInsecureCerts", true);
+        Configuration.pageLoadStrategy = "eager";
     }
 
     @Test
-    @Description("Тест01 - testWikipediaHomePage")
     public void testWikipediaHomePage() {
         step("Шаг01 - Открыть википедию", () -> {
             open("https://www.wikipedia.org");
