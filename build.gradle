@@ -37,6 +37,11 @@ test {
     useJUnitPlatform()
     systemProperties(System.getProperties())
 
+    // Настройки для Selenide
+    systemProperty "selenide.browser", "chrome"
+    systemProperty "selenide.headless", System.getProperty("selenide.headless", "false")
+    systemProperty "selenide.remote", System.getProperty("selenide.remote", "")
+
     testLogging {
         events "passed", "skipped", "failed"
         exceptionFormat "full"

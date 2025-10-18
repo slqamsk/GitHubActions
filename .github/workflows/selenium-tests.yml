@@ -46,32 +46,16 @@ jobs:
           sudo apt-get install -y google-chrome-stable
           echo "✅ Chrome version: $(google-chrome --version)"
 
-      # Шаг 4: Установка ChromeDriver (исправленная версия)
-      - name: Install ChromeDriver
+      # Шаг 4: Пропускаем установку ChromeDriver (Selenide скачает автоматически)
+      - name: Configure Selenide to auto-download drivers
         run: |
-          # Получаем точную версию Chrome
-          CHROME_VERSION=$(google-chrome --version | awk '{print $3}')
-          echo "Chrome version: $CHROME_VERSION"
-          
-          # Извлекаем мажорную версию (141 из 141.0.7390.107)
-          CHROME_MAJOR_VERSION=$(echo $CHROME_VERSION | cut -d'.' -f1)
-          echo "Chrome major version: $CHROME_MAJOR_VERSION"
-          
-          # Скачиваем совместимый ChromeDriver
-          CHROMEDRIVER_VERSION=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROME_MAJOR_VERSION")
-          echo "Compatible ChromeDriver version: $CHROMEDRIVER_VERSION"
-          
-          wget -O /tmp/chromedriver.zip "https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip"
-          sudo unzip /tmp/chromedriver.zip -d /usr/local/bin/
-          sudo chmod +x /usr/local/bin/chromedriver
-          
-          echo "✅ ChromeDriver installed: $(chromedriver --version)"
+          echo "Selenide will auto-download ChromeDriver"
 
       # Шаг 5: Установка Java
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
-          java-version: '21'  # ← ИЗМЕНИТЬ с 11 на 21
+          java-version: '21'
           distribution: 'temurin'
 
       # Шаг 6: Установка Allure

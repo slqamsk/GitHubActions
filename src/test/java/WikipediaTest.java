@@ -19,7 +19,12 @@ public class WikipediaTest {
         Configuration.browser = "chrome";
         Configuration.browserSize = "1920x1080";
         Configuration.timeout = 10000;
-        Configuration.remote = System.getProperty("selenide.remote");
+
+        // Устанавливаем remote только если он указан и не пустой
+        String remoteUrl = System.getProperty("selenide.remote");
+        if (remoteUrl != null && !remoteUrl.trim().isEmpty()) {
+            Configuration.remote = remoteUrl;
+        }
 
         // Для CI устанавливаем headless режим
         boolean isCi = System.getProperty("selenide.headless", "false").equals("true");
