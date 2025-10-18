@@ -16,7 +16,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Шаг 2: Установка системных зависимостей
+      # Шаг 2: Установка системных зависимостей (исправленная)
       - name: Install system dependencies
         run: |
           sudo apt-get update
@@ -25,8 +25,6 @@ jobs:
             unzip \
             curl \
             libxss1 \
-            libappindicator1 \
-            libindicator7 \
             fonts-liberation \
             libnss3 \
             libnspr4 \
@@ -36,7 +34,8 @@ jobs:
             libx11-xcb1 \
             libxcomposite1 \
             libxdamage1 \
-            libxrandr2
+            libxrandr2 \
+            xvfb
 
       # Шаг 3: Установка Google Chrome
       - name: Install Google Chrome
@@ -45,7 +44,7 @@ jobs:
           echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google-chrome.list
           sudo apt-get update
           sudo apt-get install -y google-chrome-stable
-          echo "Chrome version: $(google-chrome --version)"
+          echo "✅ Chrome version: $(google-chrome --version)"
 
       # Шаг 4: Установка ChromeDriver
       - name: Install ChromeDriver
@@ -60,7 +59,7 @@ jobs:
           sudo unzip /tmp/chromedriver.zip -d /usr/local/bin/
           sudo chmod +x /usr/local/bin/chromedriver
           
-          chromedriver --version
+          echo "✅ ChromeDriver installed: $(chromedriver --version)"
 
       # Шаг 5: Установка Java
       - name: Setup Java
@@ -75,21 +74,13 @@ jobs:
           wget -q https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.tgz
           tar -zxvf allure-2.29.0.tgz -C /opt/
           ln -s /opt/allure-2.29.0/bin/allure /usr/local/bin/allure
-          allure --version
+          echo "✅ Allure version: $(allure --version)"
 
       # Шаг 7: Даем права на выполнение gradlew
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      # Шаг 8: Отладочная информация
-      - name: Debug file structure
-        run: |
-          echo "=== File structure ==="
-          find . -name "*.java" -o -name "*.gradle" -o -name "gradlew" | head -20
-          echo "=== Build files ==="
-          ls -la build/ 2>/dev/null || echo "No build directory yet"
-
-      # Шаг 9: Запуск тестов
+      # Шаг 8: Запуск тестов
       - name: Run tests
         run: |
           ./gradlew clean test --info --stacktrace
@@ -97,25 +88,13 @@ jobs:
           selenide.browser: chrome
           selenide.headless: true
 
-      # Шаг 10: Проверяем что создалось
-      - name: Check build results
-        run: |
-          echo "=== After tests ==="
-          find build/ -type f -name "*.xml" -o -name "*.json" 2>/dev/null | head -20 || echo "No test results found"
-          ls -la build/ 2>/dev/null || echo "No build directory"
-
-      # Шаг 11: Генерация Allure отчета (если есть результаты)
+      # Шаг 9: Генерация Allure отчета
       - name: Generate Allure Report
         run: |
-          if [ -d "build/allure-results" ]; then
-            echo "Generating Allure report..."
-            allure generate build/allure-results -o build/reports/allure-report -c
-            echo "Allure report generated"
-          else
-            echo "No allure-results directory found"
-          fi
+          allure generate build/allure-results -o build/reports/allure-report -c
+          echo "✅ Allure report generated"
 
-      # Шаг 12: Загрузка артефактов (только если они есть)
+      # Шаг 10: Загрузка артефактов
       - name: Upload test results
         uses: actions/upload-artifact@v4
         if: always()
