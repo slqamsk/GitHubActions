@@ -160,6 +160,9 @@ jobs:
       - name: Report Success
         if: needs.test.result == 'success'
         run: |
+          REPORT_URL="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/"
+          echo "🔗 Allure Report URL: $REPORT_URL"
+          echo "::notice title=Allure Report::$REPORT_URL"
           echo "🎉 Тесты прошли успешно!"
           echo "📊 Allure Report доступен:"
           echo "   💾 Скачать: В разделе Artifacts как 'allure-report-download'"
